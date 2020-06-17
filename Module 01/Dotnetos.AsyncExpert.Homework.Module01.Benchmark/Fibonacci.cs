@@ -22,18 +22,30 @@ namespace Dotnetos.AsyncExpert.Homework.Module01.Benchmark
             return Recursive(n - 2) + Recursive(n - 1);
         }
 
-        [Benchmark]
+        //[Benchmark]
         [ArgumentsSource(nameof(Data))]
         public ulong RecursiveWithMemoization(ulong n)
         {
             return 0;
         }
-        
+
         [Benchmark]
         [ArgumentsSource(nameof(Data))]
         public ulong Iterative(ulong n)
         {
-            return 0;
+            ulong current = 0, prev1, prev2;
+            prev1 = prev2 = 1;
+
+            if (n == 1 || n == 2) return 1;
+
+            for (ulong i = 2; i < n; i++)
+            {
+                current = prev1 + prev2;
+                prev2 = prev1;
+                prev1 = current;
+            }
+
+            return current;
         }
 
         public IEnumerable<ulong> Data()
