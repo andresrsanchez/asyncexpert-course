@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Runtime.InteropServices.ComTypes;
 using BenchmarkDotNet.Attributes;
 
 namespace Dotnetos.AsyncExpert.Homework.Module01.Benchmark
@@ -22,11 +24,19 @@ namespace Dotnetos.AsyncExpert.Homework.Module01.Benchmark
             return Recursive(n - 2) + Recursive(n - 1);
         }
 
-        //[Benchmark]
+        private readonly Dictionary<ulong, ulong> _dictionary = new Dictionary<ulong, ulong>();
+
+        [Benchmark]
         [ArgumentsSource(nameof(Data))]
         public ulong RecursiveWithMemoization(ulong n)
-        {
-            return 0;
+        {            
+            if (n == 1 || n == 2) return 1;
+            if (!_dictionary.TryGetValue(n, out ulong value))
+            {
+                value = RecursiveWithMemoization(n - 1) + RecursiveWithMemoization(n - 2);
+                _dictionary.Add(n, value);
+            }
+            return value;
         }
 
         [Benchmark]
