@@ -1,10 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using BenchmarkDotNet.Attributes;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.ComTypes;
-using BenchmarkDotNet.Attributes;
 
 namespace Dotnetos.AsyncExpert.Homework.Module01.Benchmark
 {
+    [MemoryDiagnoser]
     [DisassemblyDiagnoser(exportCombinedDisassemblyReport: true)]
     public class FibonacciCalc
     {
