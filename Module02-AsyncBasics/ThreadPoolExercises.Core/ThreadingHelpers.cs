@@ -7,30 +7,7 @@ namespace ThreadPoolExercises.Core
     {
         public static void ExecuteOnThread(Action action, int repeats, CancellationToken token = default, Action<Exception>? errorAction = null)
         {
-            // * Create a thread and execute there `action` given number of `repeats` - waiting for the execution!
-            //   HINT: you may use `Join` to wait until created Thread finishes
-            // * In a loop, check whether `token` is not cancelled
-            // * If an `action` throws and exception (or token has been cancelled) - `errorAction` should be invoked (if provided)
-
-            void DoWork()
-            {
-                try
-                {
-                    var i = 0;
-                    while (i < repeats)
-                    {
-                        token.ThrowIfCancellationRequested();
-                        action();
-                        i++;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    errorAction?.Invoke(ex);
-                }
-            }
-
-            var thread = new Thread(() => DoWork());
+            var thread = new Thread(() => DoWork(action, repeats, token, errorAction));
             thread.Start();
             thread.Join();
         }
@@ -42,8 +19,32 @@ namespace ThreadPoolExercises.Core
             // * In a loop, check whether `token` is not cancelled
             // * If an `action` throws and exception (or token has been cancelled) - `errorAction` should be invoked (if provided)
 
+            var evt = new AutoResetEvent(false);
+            ThreadPool.RegisterWaitForSingleObject(evt, (a, b) =>
+            {
+                DoWork(action, repeats, token, errorAction);
+                evt.Set();
+            }, null, 0, true);
 
+            evt.WaitOne();
+        }
 
+        static void DoWork(Action action, int repeats, CancellationToken token, Action<Exception>? errorAction)
+        {
+            try
+            {
+                var i = 0;
+                while (i < repeats)
+                {
+                    token.ThrowIfCancellationRequested();
+                    action();
+                    i++;
+                }
+            }
+            catch (Exception ex)
+            {
+                errorAction?.Invoke(ex);
+            }
         }
     }
 }
